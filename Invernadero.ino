@@ -1,66 +1,75 @@
-#include <DHT.h>
-#include <LiquidCrystal.h>  // Incluye la librería para el LCD
+#include <DHT.h>            // Librería DHT (Adafruit)
+#include <LiquidCrystal.h>  // Librería LCD
 
-#define DHTPIN 13
-#define DHTTYPE DHT11
+// Definiciones de pines y tipo de sensor
+#define DHTPIN 13      // Pin al que está conectado el sensor DHT11
+#define DHTTYPE DHT11  // Tipo de sensor DHT que utilizado
 
-#define FAN_PIN 6         // Ventilador en el pin 6
-#define WATER_PUMP_PIN 7  // Bomba de agua en el pin 7
-#define GREEN_LED_PIN 11  // LED verde en el pin 11
-#define RED_LED_PIN 12    // LED rojo en el pin 12
+#define FAN_PIN 6         // Pin al que está conectado el motor ventilador
+#define WATER_PUMP_PIN 7  // Pin al que está conectada la bomba de agua
+#define GREEN_LED_PIN 11  // Pin al que está conectado el LED verde
+#define RED_LED_PIN 12    // Pin al que está conectado el LED rojo
 
-// Configuración del LCD
-LiquidCrystal lcd(10, 9, 8, 5, 4, 3, 2);  // RS, RW, E, D4, D5, D6, D7
+// Inicialización del objeto LCD
+LiquidCrystal lcd(10, 9, 8, 5, 4, 3, 2); // RS, RW, E, D4, D5, D6, D7
 
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht(DHTPIN, DHTTYPE);  // Creación de una instancia del objeto DHT
 
 void setup() {
   lcd.begin(16, 2);  // Inicializa el LCD de 16x2
 
-  pinMode(FAN_PIN, OUTPUT);         // Configura el pin del ventilador como salida
-  pinMode(WATER_PUMP_PIN, OUTPUT);  // Configura el pin de la bomba de agua como salida
-  pinMode(GREEN_LED_PIN, OUTPUT);   // Configura el pin del LED verde como salida
-  pinMode(RED_LED_PIN, OUTPUT);     // Configura el pin del LED rojo como salida
+  // Configuración de pines como salidas
+  pinMode(FAN_PIN, OUTPUT);
+  pinMode(WATER_PUMP_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(RED_LED_PIN, OUTPUT);
 
-  digitalWrite(FAN_PIN, LOW);         // Apaga el ventilador al inicio
-  digitalWrite(WATER_PUMP_PIN, LOW);  // Apaga la bomba de agua al inicio
-  digitalWrite(GREEN_LED_PIN, LOW);   // Apaga el LED verde al inicio
-  digitalWrite(RED_LED_PIN, LOW);     // Apaga el LED rojo al inicio
+  // Apaga todos los componentes al inicio
+  digitalWrite(FAN_PIN, LOW);
+  digitalWrite(WATER_PUMP_PIN, LOW);
+  digitalWrite(GREEN_LED_PIN, LOW);
+  digitalWrite(RED_LED_PIN, LOW);
 
   dht.begin();  // Inicializa el sensor DHT11
+
+  // Muestra los títulos en el LCD al inicio
+  lcd.setCursor(0, 0);
+  lcd.print("Temp: ");
+  lcd.setCursor(0, 1);
+  lcd.print("Humedad:     ");
+  lcd.setCursor(14, 0);  // Coloca el cursor después de "Temp: "
+  lcd.write(223);        // Código para el símbolo de grados Celsius (°C)
+  lcd.write("C");        // Muestra el símbolo de grados Celsius
+  lcd.setCursor(14, 1);  // Coloca el cursor después de "Humedad: "
+  lcd.print("%");        // Muestra el símbolo de porcentaje
 }
 
 void loop() {
-  float temperature = dht.readTemperature();  // Lee la temperatura del sensor
-  float humidity = dht.readHumidity();        // Lee la humedad del sensor
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
 
-  lcd.clear();  // Limpia la pantalla LCD
-  lcd.setCursor(0, 0);
-  lcd.print("Temp.: ");
-  lcd.print(temperature);
-  lcd.print(" ");
-  lcd.write(0xDF);  // Inserta el símbolo de grado centígrado (°)
-  lcd.print("C");
-  lcd.setCursor(0, 1);
-  lcd.print("Humedad: ");
-  lcd.print(humidity);
-  lcd.print(" %");
+  // Actualiza solo los valores de temperatura y humedad en el LCD
+  lcd.setCursor(9, 0);        // Posición para la temperatura
+  lcd.print(temperature, 1);  // Mostrar un decimal para la temperatura
+  lcd.setCursor(9, 1);        // Posición para la humedad
+  lcd.print(humidity, 1);     // Mostrar un decimal para la humedad
 
+  // Control de componentes según las condiciones
   if (temperature >= 25) {
-    digitalWrite(FAN_PIN, HIGH);  // Enciende el ventilador si la temperatura es mayor o igual a 25°C
+    digitalWrite(FAN_PIN, HIGH);  // Enciende el motor ventilador
   } else {
-    digitalWrite(FAN_PIN, LOW);  // Apaga el ventilador si la temperatura es menor a 25°C
+    digitalWrite(FAN_PIN, LOW);  // Apaga el motor ventilador
   }
 
   if (humidity <= 40) {
-    digitalWrite(WATER_PUMP_PIN, HIGH);  // Enciende la bomba de agua y el LED verde si la humedad es menor o igual al 40%
-    digitalWrite(GREEN_LED_PIN, HIGH);
-    digitalWrite(RED_LED_PIN, LOW);  // Apaga el LED rojo
+    digitalWrite(WATER_PUMP_PIN, HIGH);  // Enciende la bomba de agua
+    digitalWrite(GREEN_LED_PIN, HIGH);   // Enciende el LED verde
+    digitalWrite(RED_LED_PIN, LOW);      // Apaga el LED rojo
   } else {
-    digitalWrite(WATER_PUMP_PIN, LOW);  // Apaga la bomba de agua y el LED verde si la humedad es mayor al 40%
-    digitalWrite(GREEN_LED_PIN, LOW);
-    digitalWrite(RED_LED_PIN, HIGH);  // Enciende el LED rojo
+    digitalWrite(WATER_PUMP_PIN, LOW);  // Apaga la bomba de agua
+    digitalWrite(GREEN_LED_PIN, LOW);   // Apaga el LED verde
+    digitalWrite(RED_LED_PIN, HIGH);    // Enciende el LED rojo
   }
 
-  delay(1000);  // Espera 1 segundo antes de volver a ejecutar el bucle
+  delay(1000);  // Pausa de 1 segundo entre cada ciclo de lectura y control
 }
