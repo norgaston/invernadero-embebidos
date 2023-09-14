@@ -1,3 +1,11 @@
+/* GRUPO 8	
+#	Integrantes:
+1	Dolores Ponce
+2	Gaston Ponce
+3	Lorena Quipildor
+4	Rodrigo Zamora
+5	Gisela Yede*/
+
 #include <DHT.h>            // Librería DHT (Adafruit)
 #include <LiquidCrystal.h>  // Librería LCD
 
